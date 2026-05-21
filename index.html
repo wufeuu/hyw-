@@ -21,23 +21,14 @@
             padding: 20px;
         }
 
-        .page {
-            display: none;
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .page.active {
-            display: block;
-        }
-
         .box {
             background: transparent;
             padding: 40px;
             text-align: center;
+            max-width: 500px;
+            width: 100%;
         }
 
-        /* 搜索页 */
         .logo {
             font-size: 36px;
             font-weight: 600;
@@ -69,151 +60,20 @@
             padding: 0 20px;
             cursor: pointer;
         }
-
-        /* 致谢页 */
-        h1 {
-            font-size: 22px;
-            margin-bottom: 16px;
-        }
-
-        p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 12px;
-            font-size: 14px;
-        }
-
-        .list {
-            text-align: left;
-            margin: 20px 0;
-            padding: 16px;
-            background: #fafafa;
-            font-size: 14px;
-        }
-
-        .list div {
-            margin-bottom: 8px;
-        }
-
-        .list span {
-            color: #999;
-        }
-
-        .donate {
-            margin: 16px 0;
-            padding: 12px;
-            background: #fff8e1;
-            font-size: 13px;
-            color: #666;
-        }
-
-        /* 找不到页 */
-        .notfound-code {
-            font-size: 36px;
-            font-weight: 300;
-            color: #333;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-        }
-
-        .notfound-text {
-            color: #666;
-            font-size: 15px;
-            margin-bottom: 24px;
-        }
-
-        .notfound-link {
-            color: #1a73e8;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .notfound-link:hover {
-            text-decoration: underline;
-        }
-
-        /* 通用 */
-        a, .link {
-            display: inline-block;
-            margin-top: 12px;
-            color: #333;
-            text-decoration: none;
-            border-bottom: 1px solid #333;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .tips {
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid #eee;
-        }
-
-        .tips-title {
-            font-size: 12px;
-            color: #999;
-            margin-bottom: 8px;
-        }
-
-        .tip-item {
-            display: inline-block;
-            background: #f5f5f5;
-            padding: 4px 12px;
-            margin: 2px;
-            font-size: 12px;
-            color: #666;
-        }
     </style>
 </head>
 <body>
 
-    <!-- 搜索页 -->
-    <div class="page active" id="searchPage">
-        <div class="box">
-            <div class="logo">Search</div>
-            <div class="search-box">
-                <input type="text" class="search-input" id="searchInput" placeholder="输入搜索内容..." autocomplete="off"/>
-                <button class="search-btn" onclick="doSearch()">搜索</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 致谢页 -->
-    <div class="page" id="thanksPage">
-        <div class="box">
-            <h1>致谢</h1>
-            <p>感谢创作网站和提供灵感的人，也感谢浏览此网站的你。</p>
-            <div class="list">
-                <div><span>灵感：</span>𣲙 三水</div>
-                <div><span>制作：</span>某龙</div>
-            </div>
-            <div class="donate">
-                想支持我们可以捐款 pls donate（不是必须的）
-            </div>
-            <span class="link" onclick="showPage('searchPage')">返回</span>
-        </div>
-    </div>
-
-    <!-- 找不到页 -->
-    <div class="page" id="notFoundPage">
-        <div class="box">
-            <div class="notfound-code">抱歉，我们搜索不到</div>
-            <div class="notfound-text">没有找到与 <span id="queryText"></span> 相关的内容</div>
-            <a href="#" class="notfound-link" onclick="showPage('searchPage'); return false;">返回搜索</a>
+    <div class="box">
+        <div class="logo">Search</div>
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="输入搜索内容..." autocomplete="off"/>
+            <button class="search-btn" onclick="doSearch()">搜索</button>
         </div>
     </div>
 
     <script>
         const allowedKeywords = ['致谢名单'];
-
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            if (pageId === 'searchPage') {
-                document.getElementById('searchInput').value = '';
-                document.getElementById('searchInput').focus();
-            }
-        }
 
         function doSearch() {
             const query = document.getElementById('searchInput').value.trim();
@@ -222,10 +82,9 @@
             const isAllowed = allowedKeywords.some(k => query.toLowerCase() === k.toLowerCase());
 
             if (isAllowed) {
-                showPage('thanksPage');
+                window.location.href = 'thanks.html';
             } else {
-                document.getElementById('queryText').textContent = '"' + query + '"';
-                showPage('notFoundPage');
+                window.location.href = 'not-found.html?q=' + encodeURIComponent(query);
             }
         }
 
