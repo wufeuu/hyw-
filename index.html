@@ -36,9 +36,13 @@
             margin-bottom: 24px;
         }
 
-        .search-box {
+        .search-wrapper {
             position: relative;
             margin-bottom: 16px;
+        }
+
+        .search-box {
+            position: relative;
         }
 
         .search-input {
@@ -60,24 +64,136 @@
             padding: 0 20px;
             cursor: pointer;
         }
+
+        /* 历史搜索 */
+        .history {
+            text-align: left;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .history.show {
+            display: block;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .history-title {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .history-clear {
+            font-size: 12px;
+            color: #1a73e8;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .history-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .history-item {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 6px 14px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .history-item:hover {
+            background: #f5f5f5;
+        }
     </style>
 </head>
 <body>
 
     <div class="box">
         <div class="logo">Search</div>
-        <div class="search-box">
-            <input type="text" class="search-input" id="searchInput" placeholder="输入搜索内容..." autocomplete="off"/>
-            <button class="search-btn" onclick="doSearch()">搜索</button>
+        <div class="search-wrapper">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="输入搜索内容..." autocomplete="off"/>
+                <button class="search-btn" onclick="doSearch()">搜索</button>
+            </div>
+
+            <div class="history" id="historySection">
+                <div class="history-header">
+                    <span class="history-title">搜索历史</span>
+                    <button class="history-clear" onclick="clearHistory()">清除</button>
+                </div>
+                <div class="history-list" id="historyList"></div>
+            </div>
         </div>
     </div>
 
     <script>
         const allowedKeywords = ['致谢名单'];
+        const MAX_HISTORY = 10;
 
+        // 从 localStorage 获取历史
+        function getHistory() {
+            return JSON.parse(localStorage.getItem('searchHistory') || '[]');
+        }
+
+        // 保存历史
+        function saveHistory(query) {
+            let history = getHistory();
+            history = history.filter(item => item !== query);
+            history.unshift(query);
+            if (history.length > MAX_HISTORY) {
+                history = history.slice(0, MAX_HISTORY);
+            }
+            localStorage.setItem('searchHistory', JSON.stringify(history));
+            renderHistory();
+        }
+
+        // 渲染历史
+        function renderHistory() {
+            const history = getHistory();
+            const section = document.getElementById('historySection');
+            const list = document.getElementById('historyList');
+
+            if (history.length === 0) {
+                section.classList.remove('show');
+                return;
+            }
+
+            section.classList.add('show');
+            list.innerHTML = history.map(item =>
+                '<div class="history-item" onclick="searchFromHistory(\'' + item + '\')">' + item + '</div>'
+            ).join('');
+        }
+
+        // 从历史点击搜索
+        function searchFromHistory(query) {
+            document.getElementById('searchInput').value = query;
+            doSearch();
+        }
+
+        // 清除历史
+        function clearHistory() {
+            localStorage.removeItem('searchHistory');
+            renderHistory();
+        }
+
+        // 搜索
         function doSearch() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
+
+            // 保存历史
+            saveHistory(query);
 
             const isAllowed = allowedKeywords.some(k => query.toLowerCase() === k.toLowerCase());
 
@@ -91,6 +207,9 @@
         document.getElementById('searchInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') doSearch();
         });
+
+        // 页面加载时显示历史
+        renderHistory();
     </script>
 
 </body>
