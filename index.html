@@ -51,6 +51,7 @@
             font-size: 15px;
             border: 1px solid #ddd;
             outline: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .search-btn {
@@ -123,7 +124,7 @@
         <div class="logo">Search</div>
         <div class="search-wrapper">
             <div class="search-box">
-                <input type="text" class="search-input" id="searchInput" placeholder="输入搜索内容..." autocomplete="off"/>
+                <input type="text" class="search-input" id="searchInput" placeholder="输入搜索网站..." autocomplete="off"/>
                 <button class="search-btn" onclick="doSearch()">搜索</button>
             </div>
 
@@ -138,7 +139,11 @@
     </div>
 
     <script>
-        const allowedKeywords = ['致谢名单'];
+        const allowedKeywords = {
+            '致谢名单': 'thanks.html',
+            '听': 'ting.html',
+            'http://yi.myfantasy.net/ting': 'ting.html'
+        };
         const MAX_HISTORY = 10;
 
         // 从 localStorage 获取历史
@@ -195,10 +200,11 @@
             // 保存历史
             saveHistory(query);
 
-            const isAllowed = allowedKeywords.some(k => query.toLowerCase() === k.toLowerCase());
+            const isAllowed = allowedKeywords.hasOwnProperty(query.toLowerCase()) || allowedKeywords.hasOwnProperty(query);
 
             if (isAllowed) {
-                window.location.href = 'thanks.html';
+                const page = allowedKeywords[query.toLowerCase()] || allowedKeywords[query];
+                window.location.href = page;
             } else {
                 window.location.href = 'not-found.html?q=' + encodeURIComponent(query);
             }
