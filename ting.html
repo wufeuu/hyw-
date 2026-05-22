@@ -33,17 +33,50 @@
             to { opacity: 1; }
         }
 
-        /* 对话框 */
-        .dialogue-box {
+        /* 主对话框容器 */
+        .main-box {
             position: absolute;
             bottom: 60px;
             left: 20px;
             right: 20px;
+        }
+
+        /* 输入框（在右上角） */
+        .input-box {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            display: none;
+        }
+
+        .input-box.show {
+            display: block;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 13px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            outline: none;
+            background: #fff;
+            color: #000;
+        }
+
+        .input-field::placeholder {
+            color: #999;
+        }
+
+        /* 对话框 */
+        .dialogue-box {
             background: #fff;
             border: 2px solid #333;
             border-radius: 8px;
             padding: 20px 24px;
             min-height: 120px;
+            margin-top: 40px;
         }
 
         .speaker-name {
@@ -57,57 +90,6 @@
             font-size: 15px;
             line-height: 1.7;
             color: #000;
-        }
-
-        /* 输入区域 */
-        .input-area {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 12px 20px;
-            background: #fff;
-            border-top: 1px solid #eee;
-        }
-
-        .input-box {
-            display: flex;
-            gap: 10px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .text-input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            outline: none;
-            background: #fff;
-            color: #000;
-        }
-
-        .text-input::placeholder {
-            color: #999;
-        }
-
-        .text-input:focus {
-            border-color: #999;
-        }
-
-        .send-btn {
-            background: #333;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .send-btn:hover {
-            background: #555;
         }
 
         /* 对话历史 */
@@ -162,56 +144,6 @@
             margin-bottom: 8px;
             line-height: 1.4;
         }
-
-        /* 输入区域 */
-        .input-area {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            padding: 12px 16px;
-            background: #fff;
-            border-top: 1px solid #eee;
-            border-left: 1px solid #eee;
-            display: none;
-        }
-
-        .input-area.show {
-            display: flex;
-        }
-
-        .input-box {
-            display: flex;
-            gap: 8px;
-        }
-
-        .text-input {
-            flex: 1;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            outline: none;
-            background: #fff;
-            color: #000;
-        }
-
-        .text-input:focus {
-            border-color: #999;
-        }
-
-        .send-btn {
-            background: #333;
-            color: #fff;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .send-btn:hover {
-            background: #555;
-        }
     </style>
 </head>
 <body>
@@ -222,15 +154,16 @@
             <div class="history-panel" id="historyPanel"></div>
         </div>
 
-        <div class="dialogue-box">
-            <div class="speaker-name" id="speakerName">???</div>
-            <div class="dialogue-text" id="dialogueText"></div>
-        </div>
+        <div class="main-box">
+            <!-- 输入框（在右上角） -->
+            <div class="input-box" id="inputBox">
+                <input type="text" class="input-field" id="inputField" placeholder="..." autocomplete="off"/>
+            </div>
 
-        <div class="input-area" id="inputArea">
-            <div class="input-box">
-                <input type="text" class="text-input" id="textInput" placeholder="输入名称..." autocomplete="off"/>
-                <button class="send-btn" id="sendBtn">确定</button>
+            <!-- 对话框 -->
+            <div class="dialogue-box">
+                <div class="speaker-name" id="speakerName">???</div>
+                <div class="dialogue-text" id="dialogueText"></div>
             </div>
         </div>
 
@@ -238,45 +171,47 @@
         const speakerName = document.getElementById('speakerName');
         const dialogueText = document.getElementById('dialogueText');
         const historyPanel = document.getElementById('historyPanel');
-        const inputArea = document.getElementById('inputArea');
-        const textInput = document.getElementById('textInput');
-        const sendBtn = document.getElementById('sendBtn');
+        const inputBox = document.getElementById('inputBox');
+        const inputField = document.getElementById('inputField');
 
         let log = [];
         let isTyping = false;
-        let hasStarted = false;
         let step = 0;
-        let waitingInput = false;
-        let inputCount = 0;
+        let canInput = false;
+        let hasVisited = localStorage.getItem('ting_visited') === 'true';
+        let savedLog = JSON.parse(localStorage.getItem('ting_log') || '[]');
 
-        // 对话剧本（2号~8号）
+        // 首次访问对话剧本
         const script = [
-            { speaker: '???', text: '我们认识吗?或者是你认识■吗?' },      // 2号
-            { speaker: '???', text: '.......' },                           // 3号
-            { speaker: '???', text: '你好像说不了话' },                     // 4号
-            { speaker: '???', text: '等等 我知道了。' },                    // 5号
-            { speaker: '???', text: '你知道我的名字不' },                   // 6号
-            { speaker: '???', text: '猜一猜' },                            // 7号
-            { speaker: '???', text: '（输入名称...）' }                    // 8号 → 弹出输入框
+            { speaker: '???', text: '哦！' },                                              // 1号
+            { speaker: '???', text: '我们认识吗?' },                                        // 2号
+            { speaker: '???', text: '或者是你认识■吗?' },                                   // 3号
+            { speaker: '???', text: '.......' },                                          // 4号
+            { speaker: '???', text: '你好像说不了话' },                                      // 5号
+            { speaker: '???', text: '等等 我知道了。' },                                     // 6号
+            { speaker: '???', text: '.....' },                                            // 7号
+            { speaker: '???', text: '看见右边那个输入框了没 我特意设计给你的' },               // 8号
+            { speaker: '???', text: '因为我是■特意创造出来的人' },                          // 9号
+            { speaker: '???', text: 'sooooooo......' },                                   // 10号
+            { speaker: '???', text: '你知道的想要我帮助你得回答我的一个小小问题' },             // 11号
+            { speaker: '???', text: '你知道我是谁吗？' }                                    // 12号 → 可以输入了
         ];
 
-        // 输入错误后的对话（9号~10号）
+        // 错误输入后的对话
         const wrongScript = [
-            { speaker: '???', text: '...你都不认识我为什么来这里..你甚至不认识■' },  // 9号
-            { speaker: '???', text: '滚去了解她再来和我说话' }                        // 10号 → 黑屏跳转
+            { speaker: '???', text: '...' },                                                              // 1号
+            { speaker: '???', text: '..well 这证明了你还没了解我和■' },                                      // 2号
+            { speaker: '???', text: '滚去了解 http://xiaoyi.blogroom.net 再来和我说话' }                     // 3号 → 返回搜索
         ];
         let wrongStep = 0;
 
-        // 输入"停"后的对话
-        const tingScript = [
-            { speaker: '???', text: '对了..' },                    // 文本1
-            { speaker: '???', text: '个蛋，' },                    // 文本2
-            { speaker: '???', text: '哎我也希望我是他。' },         // 文本3
-            { speaker: '???', text: '你看上去对我有一些了解但不多，去认真看看吧' }  // 文本4 → 黑屏跳转
+        // 再次访问对话
+        const returnScript = [
+            { speaker: '???', text: '欢迎回来' },                                          // 1号
+            { speaker: '???', text: '对我的名字有头绪了吗？' }                               // 2号 → 可以输入了
         ];
-        let tingStep = 0;
 
-        // 输入"幻想停"后的对话
+        // 正确答案：幻想停
         const correctScript = [
             { speaker: '幻想停', text: '答对了！好吧我承认你了解她了' },
             { speaker: '幻想停', text: '你想知道什么? 我会帮助你，哦对我记得她的博客可以把我移动过去，只要你记住我的网址然后在左边有一个注入角色那个输入框把我的网址输入进去我就可以帮助你了' }
@@ -301,30 +236,35 @@
             type();
         }
 
-        // 1号文本：页面加载后1秒自动显示"哦！"
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                dialogueText.textContent = '哦！';
-                log.push({ speaker: '???', text: '哦！' });
+        // 保存记录
+        function saveLog() {
+            localStorage.setItem('ting_log', JSON.stringify(log));
+        }
+
+        // 加载历史记录
+        function loadHistory() {
+            if (savedLog.length > 0) {
+                log = savedLog;
                 updateHistory();
-            }, 1000);
-        });
+            }
+        }
 
-        // 点击推进对话（2号起）
+        // 点击推进对话
         document.addEventListener('click', (e) => {
-            if (waitingInput) return;
-            if (isTyping) return;
-            if (e.target.closest('.input-area')) return;
+            if (e.target.closest('.history-log')) return;
+            if (e.target === inputField) return;
+            if (document.activeElement === inputField) return;
 
-            // 错误对话推进（9号~10号）
-            if (wrongStep > 0 && wrongStep <= wrongScript.length) {
+            // 错误对话推进
+            if (wrongStep > 0) {
                 if (wrongStep < wrongScript.length) {
                     const line = wrongScript[wrongStep];
                     typeWriter(line.text, () => {
                         log.push({ speaker: line.speaker, text: line.text });
                         updateHistory();
+                        saveLog();
                         wrongStep++;
-                        // 10号说完：黑屏跳转
+                        // 3号说完：返回搜索
                         if (wrongStep >= wrongScript.length) {
                             fadeToSearch();
                         }
@@ -333,107 +273,116 @@
                 return;
             }
 
-            // "停"路线对话推进
-            if (tingStep > 0 && tingStep <= tingScript.length) {
-                if (tingStep < tingScript.length) {
-                    const line = tingScript[tingStep];
-                    typeWriter(line.text, () => {
-                        log.push({ speaker: line.speaker, text: line.text });
-                        updateHistory();
-                        tingStep++;
-                        // 文本4说完：黑屏跳转
-                        if (tingStep >= tingScript.length) {
-                            fadeToSearch();
-                        }
-                    });
-                }
-                return;
-            }
-
-            // "幻想停"路线对话推进
-            if (correctStep > 0 && correctStep <= correctScript.length) {
+            // 正确路线对话推进
+            if (correctStep > 0) {
                 if (correctStep < correctScript.length) {
                     const line = correctScript[correctStep];
                     typeWriter(line.text, () => {
                         log.push({ speaker: line.speaker, text: line.text });
                         updateHistory();
+                        saveLog();
                         correctStep++;
                     });
                 }
                 return;
             }
 
-            if (!hasStarted) {
-                hasStarted = true;
-                // 2号文本
-                typeWriter(script[0].text, () => {
-                    log.push({ speaker: '???', text: script[0].text });
+            // 等待输入时不能推进
+            if (canInput) return;
+
+            // 打字中不能推进
+            if (isTyping) return;
+
+            // 再次访问
+            if (hasVisited && step === 0) {
+                const line = returnScript[step];
+                typeWriter(line.text, () => {
+                    log.push({ speaker: line.speaker, text: line.text });
                     updateHistory();
-                    step = 1;
+                    saveLog();
+                    step++;
                 });
-            } else if (step < script.length) {
+            } else if (hasVisited && step < returnScript.length) {
+                const line = returnScript[step];
+                typeWriter(line.text, () => {
+                    log.push({ speaker: line.speaker, text: line.text });
+                    updateHistory();
+                    saveLog();
+                    step++;
+                    // 2号说完：可以输入了
+                    if (step >= returnScript.length) {
+                        canInput = true;
+                        inputBox.classList.add('show');
+                        inputField.placeholder = '输入...';
+                        inputField.focus();
+                    }
+                });
+            }
+            // 首次访问
+            else if (!hasVisited && step < script.length) {
                 const line = script[step];
                 typeWriter(line.text, () => {
                     log.push({ speaker: line.speaker, text: line.text });
                     updateHistory();
+                    saveLog();
                     step++;
-                    // 8号说完：弹出输入框
+
+                    // 8号说完：显示输入框
+                    if (step === 8) {
+                        inputBox.classList.add('show');
+                        inputField.placeholder = '...';
+                        canInput = false;
+                    }
+
+                    // 12号说完：可以输入了
                     if (step >= script.length) {
-                        waitingInput = true;
-                        inputArea.classList.add('show');
-                        textInput.focus();
+                        canInput = true;
+                        inputField.placeholder = '输入...';
+                        inputField.focus();
                     }
                 });
             }
         });
 
-        // 输入名称
-        sendBtn.addEventListener('click', submitName);
-        textInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') submitName();
+        // 输入框回车提交
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const name = inputField.value.trim();
+                if (!name) return;
+
+                log.push({ speaker: '你', text: name });
+                updateHistory();
+                saveLog();
+                inputField.value = '';
+
+                // 输入完名字后输入框消失
+                inputBox.classList.remove('show');
+                canInput = false;
+
+                // 标记已访问
+                localStorage.setItem('ting_visited', 'true');
+
+                if (name === '幻想停') {
+                    speakerName.textContent = '幻想停';
+                    typeWriter(correctScript[0].text, () => {
+                        log.push({ speaker: '幻想停', text: correctScript[0].text });
+                        updateHistory();
+                        saveLog();
+                        correctStep = 1;
+                    });
+                } else {
+                    // 错误名字 → 显示 "..."
+                    typeWriter(wrongScript[0].text, () => {
+                        log.push({ speaker: '???', text: wrongScript[0].text });
+                        updateHistory();
+                        saveLog();
+                        wrongStep = 1;
+                    });
+                }
+            }
         });
 
-        function submitName() {
-            const name = textInput.value.trim();
-            if (!name) return;
-
-            inputArea.classList.remove('show');
-            waitingInput = false;
-            textInput.value = '';
-
-            log.push({ speaker: '你', text: name });
-            updateHistory();
-
-            // 正确答案：幻想停
-            if (name === '幻想停') {
-                speakerName.textContent = '幻想停';
-                typeWriter(correctScript[0].text, () => {
-                    log.push({ speaker: '???', text: correctScript[0].text });
-                    updateHistory();
-                    correctStep = 1;
-                });
-                return;
-            }
-
-            // 输入"停"
-            if (name === '停') {
-                typeWriter(tingScript[0].text, () => {
-                    log.push({ speaker: '???', text: tingScript[0].text });
-                    updateHistory();
-                    tingStep = 1;
-                });
-                return;
-            }
-
-            // 错误名字 → 9号文本
-            typeWriter(wrongScript[0].text, () => {
-                log.push({ speaker: '???', text: wrongScript[0].text });
-                updateHistory();
-                wrongStep = 1;
-            });
-        }
-
-        // 黑屏跳转到搜索页
+        // 返回搜索页
         function fadeToSearch() {
             setTimeout(() => {
                 document.querySelector('.scene').style.transition = 'opacity 1s';
@@ -442,14 +391,6 @@
                     window.location.href = 'index.html';
                 }, 1000);
             }, 500);
-        }
-
-        function showDialogue(speaker, text) {
-            speakerName.textContent = speaker;
-            typeWriter(text, () => {
-                log.push({ speaker: speaker, text: text });
-                updateHistory();
-            });
         }
 
         function toggleHistory() {
@@ -463,6 +404,9 @@
             ).join('');
             historyPanel.scrollTop = historyPanel.scrollHeight;
         }
+
+        // 页面加载
+        loadHistory();
     </script>
 
 </body>
