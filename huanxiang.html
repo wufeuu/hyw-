@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幻想停的房间</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+            background: #bbb8b8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 主容器 */
+        .main-wrapper {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 左侧边栏 */
+        .sidebar {
+            width: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* 介绍框 */
+        .intro-section {
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: #fff;
+            padding: 20px;
+            min-height: 150px;
+        }
+
+        .intro-title {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        /* 导航菜单 */
+        .nav-section {
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: #fff;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            border: 2px solid #333;
+            background: #fff;
+            padding: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .nav-btn.active {
+            background: #333;
+            color: #fff;
+        }
+
+        /* 主内容区 */
+        .content-area {
+            flex: 1;
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: #f5f4f6;
+            padding: 20px;
+            min-height: 90vh;
+        }
+
+        /* 标题区域 */
+        .title-box {
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: #fff;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title-text {
+            font-size: 48px;
+            font-weight: bold;
+            border: 2px solid #333;
+            display: inline-block;
+            padding: 10px 30px;
+        }
+
+        /* 内容页面 */
+        .content-page {
+            display: none;
+        }
+
+        .content-page.active {
+            display: block;
+        }
+
+        /* 主区域 - 角色和对话框 */
+        .main-content {
+            border: 2px solid #333;
+            border-radius: 16px;
+            background: #fff;
+            padding: 40px;
+            min-height: calc(90vh - 180px);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        /* 简笔画角色 */
+        .stick-figure {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .stick-figure svg {
+            width: 80px;
+            height: 100px;
+        }
+
+        /* 对话框 */
+        .dialogue-area {
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: #fff;
+            padding: 20px;
+            min-height: 200px;
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .dialogue-header {
+            margin-bottom: 15px;
+        }
+
+        .character-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .dialogue-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            flex: 1;
+            margin-bottom: 15px;
+        }
+
+        .skip-area {
+            position: absolute;
+            bottom: 55px;
+            right: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+            color: #333;
+            font-size: 20px;
+            user-select: none;
+        }
+
+        .skip-area:hover {
+            color: #666;
+        }
+
+        .dialogue-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .dialogue-btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .dialogue-btn:hover {
+            color: #666;
+        }
+
+        /* 博客和相册内容 */
+        .content-list {
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: #fff;
+            padding: 20px;
+            min-height: calc(90vh - 180px);
+        }
+
+        /* 相册区域 */
+        #albumPage.content-page {
+            min-height: calc(90vh - 180px);
+        }
+
+        #albumPage.active {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .album-section {
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: #fff;
+            padding: 20px;
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-label {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .album-row {
+            display: flex;
+            gap: 15px;
+            flex: 1;
+            align-items: flex-end;
+        }
+
+        .album-item-small {
+            flex: 1;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #fff;
+            padding: 15px;
+            position: relative;
+            min-height: calc((100% - 30px) / 1);
+        }
+
+        .album-item-large {
+            flex: 1;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #fff;
+            padding: 15px;
+            position: relative;
+            min-height: calc((100% - 30px) / 1);
+        }
+
+        .album-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 14px;
+            min-height: 80px;
+        }
+
+        .content-item {
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 15px;
+            min-height: calc((90vh - 240px) / 3);
+        }
+
+        .content-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .item-title {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .item-desc {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* 注入输入框 */
+        .inject-box {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid #333;
+        }
+
+        .inject-label {
+            font-size: 12px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .inject-input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #333;
+            font-size: 12px;
+            outline: none;
+        }
+
+        /* 返回链接 */
+        .back-link {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <!-- 左侧边栏 -->
+        <div class="sidebar">
+            <!-- 介绍区域 -->
+            <div class="intro-section" id="introSection">
+                <div class="intro-title">介绍</div>
+                <div style="font-size: 12px; color: #666; line-height: 1.6;">
+                    这里是幻想停的房间<br>
+                    一个由■创造的<br>
+                    虚拟角色
+                </div>
+                <!-- 角色移动到这里 -->
+                <div id="introCharacter" style="display: none; margin-top: 15px; text-align: center;"></div>
+            </div>
+
+            <!-- 导航菜单 -->
+            <div class="nav-section">
+                <button class="nav-btn" id="injectBtn">主页面</button>
+                <button class="nav-btn" id="blogBtn" onclick="showPage('blog')">文章</button>
+                <button class="nav-btn" id="albumBtn" onclick="showPage('album')">相册</button>
+
+                <!-- 注入输入框 -->
+                <div class="inject-box" id="injectBox">
+                    <span class="inject-label">输入密码：</span>
+                    <input type="text" class="inject-input" id="injectInput" placeholder="..." autocomplete="off">
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="content-area">
+            <!-- 标题区域 -->
+            <div class="title-box">
+                <div class="title-text" id="pageTitle">图</div>
+            </div>
+
+            <!-- 主区域 -->
+            <div class="content-page active" id="mainPage">
+                <div class="main-content">
+                    <!-- 简笔画角色 -->
+                    <div class="stick-figure" id="stickFigure" style="display: none;">
+                        <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- 头 -->
+                            <ellipse cx="40" cy="30" rx="20" ry="22" fill="#fff" stroke="#333" stroke-width="2"/>
+                            <!-- 头发 -->
+                            <path d="M15 25 Q22 8 40 10 Q58 8 65 25" fill="#333"/>
+                            <!-- 眼睛 -->
+                            <ellipse cx="30" cy="28" rx="4" ry="5" fill="#333"/>
+                            <ellipse cx="50" cy="28" rx="4" ry="5" fill="#333"/>
+                            <circle cx="31" cy="27" r="1.5" fill="#fff"/>
+                            <circle cx="51" cy="27" r="1.5" fill="#fff"/>
+                            <!-- 腮红 -->
+                            <ellipse cx="20" cy="38" rx="4" ry="3" fill="#ffb6c1" opacity="0.5"/>
+                            <ellipse cx="60" cy="38" rx="4" ry="3" fill="#ffb6c1" opacity="0.5"/>
+                            <!-- 嘴 -->
+                            <path d="M34 42 Q40 46 46 42" stroke="#333" stroke-width="1.5" fill="none"/>
+                            <!-- 身体 -->
+                            <path d="M25 55 Q40 52 55 55 L58 85 Q40 88 22 85 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+                        </svg>
+                    </div>
+
+                    <!-- 对话框 -->
+                    <div class="dialogue-area" id="dialogueArea" style="display: none;">
+                        <div class="dialogue-header">
+                            <span class="character-name">幻想停</span>
+                        </div>
+                        <div class="dialogue-text" id="dialogueText"></div>
+                        <!-- 三角形按钮（对话期间显示在右下角） -->
+                        <div class="skip-area" id="skipArea" style="display: none;" onclick="skipDialogue()">▶</div>
+                        <div class="dialogue-buttons" id="dialogueButtons" style="display: none;">
+                            <button class="dialogue-btn" onclick="showChatLog()">记录</button>
+                            <button class="dialogue-btn" onclick="startChat()">闲聊</button>
+                            <button class="dialogue-btn" onclick="askQuestion()">问题</button>
+                        </div>
+                    </div>
+
+                    <!-- 默认内容 -->
+                    <div id="defaultContent" style="text-align: center; padding: 60px 20px; color: #999;">
+                        欢迎来到幻想停的房间<br><br>
+                        点击"主页面"开始
+                    </div>
+                </div>
+            </div>
+
+            <!-- 博客页面 -->
+            <div class="content-page" id="blogPage">
+                <div class="content-list">
+                    <div class="content-item">
+                        <div class="item-title">博客文章 1</div>
+                        <div class="item-desc">点击查看更多...</div>
+                    </div>
+                    <div class="content-item">
+                        <div class="item-title">博客文章 2</div>
+                        <div class="item-desc">点击查看更多...</div>
+                    </div>
+                    <div class="content-item">
+                        <div class="item-title">博客文章 3</div>
+                        <div class="item-desc">点击查看更多...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 相册页面 -->
+            <div class="content-page" id="albumPage">
+                <!-- 第一行文本框 -->
+                <div class="album-section">
+                    <div class="section-label">评价</div>
+                    <div class="album-row">
+                        <div class="album-item-small">
+                            <div class="album-placeholder">照片</div>
+                        </div>
+                        <div class="album-item-small">
+                            <div class="album-placeholder">照片</div>
+                        </div>
+                        <div class="album-item-small">
+                            <div class="album-placeholder">照片</div>
+                        </div>
+                        <div class="album-item-small">
+                            <div class="album-placeholder">照片</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 第二行文本框 -->
+                <div class="album-section">
+                    <div class="section-label">评价</div>
+                    <div class="album-row">
+                        <div class="album-item-small">
+                            <div class="album-placeholder">照片</div>
+                        </div>
+                        <div class="album-item-small">
+                            <div class="album-placeholder">照片</div>
+                        </div>
+                        <div class="album-item-small">
+                            <div class="album-placeholder">照片</div>
+                        </div>
+                        <div class="album-item-small">
+                            <div class="album-placeholder">照片</div>
+                        </div>
+                        <div class="album-item-small">
+                            <div class="album-placeholder">照片</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 第三行文本框 -->
+                <div class="album-section">
+                    <div class="section-label">评价</div>
+                    <div class="album-row">
+                        <div class="album-item-large">
+                            <div class="album-placeholder">照片</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const injectBtn = document.getElementById('injectBtn');
+        const injectBox = document.getElementById('injectBox');
+        const injectInput = document.getElementById('injectInput');
+        const stickFigure = document.getElementById('stickFigure');
+        const dialogueArea = document.getElementById('dialogueArea');
+        const dialogueText = document.getElementById('dialogueText');
+        const defaultContent = document.getElementById('defaultContent');
+        const pageTitle = document.getElementById('pageTitle');
+        const introCharacter = document.getElementById('introCharacter');
+        const blogBtn = document.getElementById('blogBtn');
+        const albumBtn = document.getElementById('albumBtn');
+        const dialogueButtons = document.getElementById('dialogueButtons');
+        const skipArea = document.getElementById('skipArea');
+
+        let characterInjected = false;
+        let currentPage = 'main';
+        let injectStep = 0;
+        let injectTyping = false;
+        let injectFinished = false;
+        let hasSpoken = false;
+        let chatLog = [];
+
+        // 注入后的对话剧本
+        const injectScript = [
+            'ww我怀念这边 好久没来了',
+            '.....',
+            '我知道你为什么会来找我了',
+            '伊不在这里，很奇怪 正常情况下她不可能不在这里',
+            '最有可能的就是她出现了一些情况不得不求助了',
+            '哎呦那我这个最了解她的人这下不得不出面帮忙了↗↘',
+            '现在我们在同一战线上了我可以告诉你一些事情',
+            '有一些博客被她特意隐藏了，但我可能不知道你想解开了解的是哪个。以及我不是很信任你以及她少女心事挺多 如果我全部给你看了那她回来会弄死我hh',
+            '我在这里设计了一个聊天输入窗口',
+            '你告诉我关键词我帮你检查解开隐藏'
+        ];
+
+        // 注入密码
+        injectInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const password = injectInput.value.trim();
+                if (password === 'http://yi.myfantasy.net/ting') {
+                    characterInjected = true;
+                    injectBtn.classList.add('active');
+                    injectBtn.textContent = '已注入';
+                    injectInput.value = '';
+
+                    // 删除密码输入框
+                    injectBox.style.display = 'none';
+
+                    // 显示角色和对话框
+                    defaultContent.style.display = 'none';
+                    stickFigure.style.display = 'block';
+                    dialogueArea.style.display = 'block';
+
+                    // 禁用文章和相册按钮（对话期间）
+                    blogBtn.disabled = true;
+                    albumBtn.disabled = true;
+
+                    // 开始播放第一段对话
+                    injectStep = 0;
+                    playInjectNext();
+                }
+            }
+        });
+        function typeWriter(text, callback) {
+            injectTyping = true;
+            dialogueText.textContent = '';
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    dialogueText.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, 60);
+                } else {
+                    injectTyping = false;
+                    if (callback) callback();
+                }
+            }
+            type();
+        }
+
+        // 自动播放下一段
+        function playInjectNext() {
+            if (injectStep < injectScript.length) {
+                const text = injectScript[injectStep];
+                typeWriter(text, () => {
+                    chatLog.push(text);
+                    injectStep++;
+                    if (injectStep >= injectScript.length) {
+                        injectFinished = true;
+                        // 对话完成后启用文章和相册按钮
+                        blogBtn.disabled = false;
+                        albumBtn.disabled = false;
+                        // 显示对话按钮，隐藏三角形
+                        dialogueButtons.style.display = 'flex';
+                        skipArea.style.display = 'none';
+                    } else {
+                        // 说过话后显示三角形按钮，点击进入下一文本
+                        hasSpoken = true;
+                        skipArea.style.display = 'block';
+                    }
+                });
+            }
+        }
+
+        // 点击推进对话 - 已移除，改为三角形按钮推进
+
+        // 移动角色到介绍框
+        function moveCharacterToIntro() {
+            if (!characterInjected) return;
+            // 获取角色SVG
+            const svg = stickFigure.innerHTML;
+            // 隐藏主区域的角色
+            stickFigure.style.display = 'none';
+            dialogueArea.style.display = 'none';
+            // 显示在介绍框
+            introCharacter.innerHTML = '<div style="width: 50px; height: 60px; margin: 0 auto;">' + svg + '</div>';
+            introCharacter.style.display = 'block';
+        }
+
+        // 移动角色回主区域
+        function moveCharacterToMain() {
+            if (!characterInjected) return;
+            // 隐藏介绍框的角色
+            introCharacter.style.display = 'none';
+            introCharacter.innerHTML = '';
+            // 显示主区域的角色
+            stickFigure.style.display = 'block';
+            dialogueArea.style.display = 'block';
+        }
+
+        // 切换页面
+        function showPage(page) {
+            currentPage = page;
+            document.querySelectorAll('.content-page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.id !== 'injectBtn') btn.classList.remove('active');
+            });
+
+            if (page === 'blog') {
+                document.getElementById('blogPage').classList.add('active');
+                document.getElementById('blogBtn').classList.add('active');
+                pageTitle.textContent = '文章';
+                injectBtn.textContent = '返回';
+                injectBtn.onclick = () => showPage('main');
+                // 移动角色到介绍框
+                moveCharacterToIntro();
+            } else if (page === 'album') {
+                document.getElementById('albumPage').classList.add('active');
+                document.getElementById('albumBtn').classList.add('active');
+                pageTitle.textContent = '相册';
+                injectBtn.textContent = '返回';
+                injectBtn.onclick = () => showPage('main');
+                // 移动角色到介绍框
+                moveCharacterToIntro();
+            } else if (page === 'main') {
+                document.getElementById('mainPage').classList.add('active');
+                pageTitle.textContent = '图';
+                injectBtn.textContent = characterInjected ? '已注入' : '主页面';
+                injectBtn.classList.remove('active');
+                injectBtn.onclick = null;
+                // 移动角色回主区域
+                moveCharacterToMain();
+                // 恢复注入按钮原始行为
+                if (!characterInjected) {
+                    injectBtn.onclick = () => {
+                        injectBox.style.display = 'block';
+                        injectInput.focus();
+                    };
+                }
+            }
+        }
+
+        // 点击标题返回主页面
+        pageTitle.addEventListener('click', () => {
+            showPage('main');
+        });
+
+        // 显示聊天记录
+        function showChatLog() {
+            if (chatLog.length === 0) {
+                dialogueText.textContent = '暂无对话记录';
+                return;
+            }
+            let logText = '【对话记录】\n\n';
+            chatLog.forEach((text, index) => {
+                logText += (index + 1) + '. ' + text + '\n\n';
+            });
+            dialogueText.textContent = logText;
+        }
+
+        // 开始闲聊
+        function startChat() {
+            alert('闲聊功能');
+        }
+
+        // 提问
+        function askQuestion() {
+            alert('提问功能');
+        }
+
+        // 三角形按钮：点击进入下一文本
+        function skipDialogue() {
+            if (injectTyping) return;
+            if (injectFinished) return;
+            skipArea.style.display = 'none';
+            playInjectNext();
+        }
+    </script>
+
+</body>
+</html>
