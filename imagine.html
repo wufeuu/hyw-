@@ -51,7 +51,7 @@
         /* 主对话框容器 */
         .main-box {
             position: absolute;
-            bottom: 60px;
+            bottom: 150px;
             left: 20px;
             right: 20px;
         }
@@ -91,6 +91,7 @@
             padding: 15px;
             min-height: 200px;
             margin-top: 40px;
+            position: relative;
         }
 
         .speaker-name {
@@ -104,6 +105,22 @@
             font-size: 15px;
             line-height: 1.7;
             color: #000;
+        }
+
+        /* 三角形按钮 */
+        .skip-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 20px;
+            color: #333;
+            user-select: none;
+            display: none;
+        }
+
+        .skip-btn:hover {
+            color: #666;
         }
 
         /* 对话历史 */
@@ -180,6 +197,8 @@
             <div class="dialogue-box">
                 <div class="speaker-name" id="speakerName">???</div>
                 <div class="dialogue-text" id="dialogueText"></div>
+                <!-- 三角形按钮 -->
+                <div class="skip-btn" id="skipBtn" onclick="nextDialogue()">▶</div>
             </div>
         </div>
 
@@ -189,12 +208,17 @@
         const historyPanel = document.getElementById('historyPanel');
         const inputBox = document.getElementById('inputBox');
         const inputField = document.getElementById('inputField');
+        const skipBtn = document.getElementById('skipBtn');
 
         let log = [];
         let isTyping = false;
-        let step = 0;
         let canInput = false;
         let currentSpeaker = '???';
+
+        // 当前剧本状态
+        let currentScript = null;
+        let currentStep = 0;
+        let currentMode = 'main'; // main, firstWrong, repeatWrong, stop, correct, huanxiangReturn, return
 
         // 检查是否知道名字
         let knownName = localStorage.getItem('imagine_known_name');
@@ -217,162 +241,54 @@
             log = JSON.parse(savedLog);
         }
 
-        // 首次访问的对话剧本
-        const script = [
-            { speaker: '???', text: '哦！' },
-            { speaker: '???', text: '我们认识吗?' },
-            { speaker: '???', text: '或者是你认识■吗?' },
-            { speaker: '???', text: '.......' },
-            { speaker: '???', text: '你好像说不了话' },
-            { speaker: '???', text: '等等 我知道了。' },
-            { speaker: '???', text: '.....' },
-            { speaker: '???', text: '看见右边那个输入框了没 我特意设计给你的' },
-            { speaker: '???', text: '因为我是■特意创造出来的人' },
-            { speaker: '???', text: 'sooooooo......' },
-            { speaker: '???', text: '你知道的想要我帮助你得回答我的一个小小问题' },
-            { speaker: '???', text: '你知道我是谁吗？' }
-        ];
-
-        // 第一次错误输入后的对话
-        const firstWrongScript = [
-            { speaker: '???', text: '...well 这证明了你还没了解我和■' },
-            { speaker: '???', text: '滚去 http://xiaoyi.blogroom.net 了解 再来和我说话' }
-        ];
-        let firstWrongStep = 0;
-        let firstWrongFinished = false;
-
-        // 播放第一次错误对话（自动播放）
-        function playFirstWrongDialogue() {
-            if (firstWrongStep < firstWrongScript.length) {
-                const line = firstWrongScript[firstWrongStep];
-                typeWriter(line.text, () => {
-                    log.push({ speaker: line.speaker, text: line.text });
-                    saveLog();
-                    updateHistory();
-                    firstWrongStep++;
-                    if (firstWrongStep < firstWrongScript.length) {
-                        setTimeout(playFirstWrongDialogue, 800);
-                    } else {
-                        firstWrongFinished = true;
-                    }
-                });
-            }
-        }
-
-        // 第二次及以后错误输入后的对话
-        const repeatWrongScript = [
-            { speaker: '???', text: '蠢货' },
-            { speaker: '???', text: '再滚去 http://xiaoyi.blogroom.net 好好看看 再来和我说话！' }
-        ];
-        let repeatWrongStep = 0;
-        let repeatWrongFinished = false;
-
-        // 播放重复错误对话（自动播放）
-        function playRepeatWrongDialogue() {
-            if (repeatWrongStep < repeatWrongScript.length) {
-                const line = repeatWrongScript[repeatWrongStep];
-                typeWriter(line.text, () => {
-                    log.push({ speaker: line.speaker, text: line.text });
-                    saveLog();
-                    updateHistory();
-                    repeatWrongStep++;
-                    if (repeatWrongStep < repeatWrongScript.length) {
-                        setTimeout(playRepeatWrongDialogue, 800);
-                    } else {
-                        repeatWrongFinished = true;
-                    }
-                });
-            }
-        }
-
-        // "停"支线对话
-        const stopScript = [
-            { speaker: '???', text: '对了..个屁' },
-            { speaker: '???', text: '...' },
-            { speaker: '???', text: '唉凭什么我不是他呢', small: true },
-            { speaker: '???', text: '你看上去有一些了解但不多，去 http://xiaoyi.blogroom.net 在认真看看吧' }
-        ];
-        let stopStep = 0;
-        let stopFinished = false;
-
-        // 播放"停"支线对话（自动播放）
-        function playStopDialogue() {
-            if (stopStep < stopScript.length) {
-                const line = stopScript[stopStep];
-                const isSmall = line.small;
-                dialogueText.style.fontSize = isSmall ? '12px' : '15px';
-                typeWriter(line.text, () => {
-                    log.push({ speaker: line.speaker, text: line.text });
-                    saveLog();
-                    updateHistory();
-                    dialogueText.style.fontSize = '15px';
-                    stopStep++;
-                    if (stopStep < stopScript.length) {
-                        setTimeout(playStopDialogue, 800);
-                    } else {
-                        stopFinished = true;
-                    }
-                });
-            }
-        }
-
-        // 正确答案：幻想停
-        const correctScript = [
-            { speaker: '幻想停', text: '答对了！好吧' },
-            { speaker: '幻想停', text: '.....' },
-            { speaker: '幻想停', text: '我会帮助你，我记得她的博客可以把我移动过去，只要你记住我的网址然后在有一个注入角色那个输入框把我的网址输入进去' },
-            { speaker: '幻想停', text: '明白吗？' },
-            { speaker: '幻想停', text: '现在快去' }
-        ];
-        let correctStep = 0;
-
-        // 播放正确路线对话（自动播放）
-        function playCorrectDialogue() {
-            if (correctStep < correctScript.length) {
-                const line = correctScript[correctStep];
-                typeWriter(line.text, () => {
-                    log.push({ speaker: line.speaker, text: line.text });
-                    saveLog();
-                    updateHistory();
-                    correctStep++;
-                    if (correctStep < correctScript.length) {
-                        setTimeout(playCorrectDialogue, 800);
-                    }
-                });
-            }
-        }
-
-        // 从huanxiang返回的对话剧本
-        const huanxiangReturnScript = [
-            { speaker: '幻想停', text: '你怎么又来我房间了' },
-            { speaker: '幻想停', text: '.....' },
-            { speaker: '幻想停', text: '算了...你在这里想呆多久就多久吧' },
-            { speaker: '幻想停', text: '....（沉默）' }
-        ];
-        let huanxiangReturnStep = 0;
-
-        // 播放从huanxiang返回的对话（自动播放）
-        function playHuanxiangReturnDialogue() {
-            if (huanxiangReturnStep < huanxiangReturnScript.length) {
-                const line = huanxiangReturnScript[huanxiangReturnStep];
-                typeWriter(line.text, () => {
-                    log.push({ speaker: line.speaker, text: line.text });
-                    saveLog();
-                    updateHistory();
-                    huanxiangReturnStep++;
-                    if (huanxiangReturnStep < huanxiangReturnScript.length) {
-                        setTimeout(playHuanxiangReturnDialogue, 800);
-                    }
-                });
-            }
-        }
-
-        // 第二次及以后进入的对话剧本（未答对情况下）
-        const returnScript = [
-            { speaker: '???', text: '欢迎回来' },
-            { speaker: '???', text: '对我的名字有头绪了吗？' }
-        ];
-        let returnStep = 0;
+        // 各种剧本
+        const scripts = {
+            main: [
+                { speaker: '???', text: '哦！' },
+                { speaker: '???', text: '我们认识吗?' },
+                { speaker: '???', text: '或者是你认识■吗?' },
+                { speaker: '???', text: '.......' },
+                { speaker: '???', text: '你好像说不了话' },
+                { speaker: '???', text: '等等 我知道了。' },
+                { speaker: '???', text: '.....' },
+                { speaker: '???', text: '看见右边那个输入框了没 我特意设计给你的' },
+                { speaker: '???', text: '因为我是■特意创造出来的人' },
+                { speaker: '???', text: 'sooooooo......' },
+                { speaker: '???', text: '你知道的想要我帮助你得回答我的一个小小问题' },
+                { speaker: '???', text: '你知道我是谁吗？' }
+            ],
+            firstWrong: [
+                { speaker: '???', text: '...well 这证明了你还没了解我和■' },
+                { speaker: '???', text: '滚去 http://xiaoyi.blogroom.net 了解 再来和我说话' }
+            ],
+            repeatWrong: [
+                { speaker: '???', text: '蠢货' },
+                { speaker: '???', text: '再滚去 http://xiaoyi.blogroom.net 好好看看 再来和我说话！' }
+            ],
+            stop: [
+                { speaker: '???', text: '对了..个屁' },
+                { speaker: '???', text: '...' },
+                { speaker: '???', text: '唉凭什么我不是他呢', small: true },
+                { speaker: '???', text: '你看上去有一些了解但不多，去 http://xiaoyi.blogroom.net 在认真看看吧' }
+            ],
+            correct: [
+                { speaker: '幻想停', text: '答对了！好吧' },
+                { speaker: '幻想停', text: '.....' },
+                { speaker: '幻想停', text: '我会帮助你，我记得她的博客可以把我移动过去，只要你记住我的网址然后在有一个注入角色那个输入框把我的网址输入进去' },
+                { speaker: '幻想停', text: '明白吗？' },
+                { speaker: '幻想停', text: '现在快去' }
+            ],
+            huanxiangReturn: [
+                { speaker: '幻想停', text: '你怎么又来我房间了' },
+                { speaker: '幻想停', text: '.....' },
+                { speaker: '幻想停', text: '算了...你在这里想呆多久就多久吧' },
+                { speaker: '幻想停', text: '....（沉默）' }
+            ],
+            return: [
+                { speaker: '???', text: '欢迎回来' },
+                { speaker: '???', text: '对我的名字有头绪了吗？' }
+            ]
+        };
 
         // 保存对话记录
         function saveLog() {
@@ -397,83 +313,98 @@
             type();
         }
 
-        // 点击推进对话
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.history-log')) return;
-            if (e.target === inputField) return;
-            if (document.activeElement === inputField) return;
+        // 播放一段对话
+        function playLine(line, callback) {
+            if (line.speaker) {
+                speakerName.textContent = line.speaker;
+            }
+            const isSmall = line.small;
+            dialogueText.style.fontSize = isSmall ? '12px' : '15px';
+            typeWriter(line.text, () => {
+                log.push({ speaker: line.speaker || currentSpeaker, text: line.text });
+                saveLog();
+                updateHistory();
+                dialogueText.style.fontSize = '15px';
+                if (callback) callback();
+            });
+        }
 
-            // 第一次错误对话：播放完最后一段后才可点击返回
-            if (firstWrongStep > 0 || firstWrongFinished) {
-                if (firstWrongFinished) {
+        // 显示三角形按钮
+        function showSkipBtn() {
+            skipBtn.style.display = 'block';
+        }
+
+        // 隐藏三角形按钮
+        function hideSkipBtn() {
+            skipBtn.style.display = 'none';
+        }
+
+        // 下一段对话（点击三角形）
+        function nextDialogue() {
+            if (isTyping) return;
+            if (!currentScript) return;
+
+            hideSkipBtn();
+            currentStep++;
+
+            if (currentStep < currentScript.length) {
+                playLine(currentScript[currentStep], () => {
+                    // 每段说完后显示三角形
+                    showSkipBtn();
+                });
+            } else {
+                // 剧本播放完毕
+                onScriptEnd();
+            }
+        }
+
+        // 剧本播放完毕后的处理
+        function onScriptEnd() {
+            switch (currentMode) {
+                case 'main':
+                    // 显示输入框
+                    canInput = true;
+                    inputBox.classList.add('show');
+                    inputField.placeholder = '输入...';
+                    inputField.focus();
+                    break;
+                case 'firstWrong':
+                case 'repeatWrong':
+                case 'stop':
+                    // 返回搜索页
                     window.location.href = 'index.html';
-                }
-                return;
-            }
-
-            // 重复错误对话：播放完最后一段后才可点击返回
-            if (repeatWrongStep > 0 || repeatWrongFinished) {
-                if (repeatWrongFinished) {
-                    window.location.href = 'index.html';
-                }
-                return;
-            }
-
-            // "停"支线：播放完最后一段后才可点击返回
-            if (stopStep > 0 || stopFinished) {
-                if (stopFinished) {
-                    window.location.href = 'index.html';
-                }
-                return;
-            }
-
-            // 从huanxiang返回的对话：播放完最后一段后不可返回
-            if (huanxiangReturnStep > 0 || fromHuanxiang) {
-                if (huanxiangReturnStep >= huanxiangReturnScript.length) {
-                    // 播放完了，不跳转
-                }
-                return;
-            }
-
-            // 正确路线：播放完点击跳转新页面
-            if (correctStep > 0) {
-                if (correctStep >= correctScript.length) {
+                    break;
+                case 'correct':
+                    // 跳转到huanxiang
                     localStorage.setItem('imagine_from_huanxiang', 'true');
                     window.location.href = 'huanxiang.html';
-                }
-                return;
+                    break;
+                case 'huanxiangReturn':
+                    // 什么都不做，停留在页面
+                    break;
+                case 'return':
+                    // 显示输入框
+                    canInput = true;
+                    inputBox.classList.add('show');
+                    inputField.placeholder = '输入...';
+                    inputField.focus();
+                    break;
             }
+        }
 
-            // 第二次及以后进入的对话（未答对情况下）- 现在是自动播放，不需要点击推进
-            if (wrongCount > 0 && returnStep < returnScript.length) {
-                return;
-            }
+        // 开始播放剧本
+        function startScript(mode) {
+            currentMode = mode;
+            currentScript = scripts[mode];
+            currentStep = 0;
 
-            // 等待输入时不能推进
-            if (canInput) return;
-
-            // 打字中不能推进
-            if (isTyping) return;
-
-            // 首次访问的对话推进
-            if (step < script.length) {
-                const line = script[step];
-                typeWriter(line.text, () => {
-                    log.push({ speaker: line.speaker, text: line.text });
-                    saveLog();
-                    updateHistory();
-                    step++;
-
-                    // 12号说完：显示输入框
-                    if (step >= script.length) {
-                        canInput = true;
-                        inputBox.classList.add('show');
-                        inputField.placeholder = '输入...';
-                        inputField.focus();
-                    }
+            if (currentScript && currentScript.length > 0) {
+                playLine(currentScript[0], () => {
+                    // 第一段说完后显示三角形
+                    showSkipBtn();
                 });
             }
-        });
+        }
 
         // 输入框回车提交
         inputField.addEventListener('keydown', (e) => {
@@ -486,76 +417,37 @@
                 updateHistory();
                 inputField.value = '';
                 inputBox.classList.remove('show');
+                canInput = false;
 
                 if (name === '幻想停') {
-                    // 保存已知名字，重置错误次数
                     localStorage.setItem('imagine_known_name', '幻想停');
                     localStorage.setItem('imagine_wrong_count', '0');
                     currentSpeaker = '幻想停';
-                    speakerName.textContent = '幻想停';
-                    correctStep = 0;
-                    playCorrectDialogue();
+                    startScript('correct');
                 } else if (name === '停') {
-                    stopStep = 0;
-                    stopFinished = false;
-                    playStopDialogue();
+                    startScript('stop');
                 } else {
-                    // 错误次数+1
                     wrongCount++;
                     localStorage.setItem('imagine_wrong_count', wrongCount.toString());
-
                     if (wrongCount === 1) {
-                        // 第一次错误
-                        firstWrongStep = 0;
-                        firstWrongFinished = false;
-                        playFirstWrongDialogue();
+                        startScript('firstWrong');
                     } else {
-                        // 第二次及以后错误
-                        repeatWrongStep = 0;
-                        repeatWrongFinished = false;
-                        playRepeatWrongDialogue();
+                        startScript('repeatWrong');
                     }
                 }
             }
         });
 
-        // 播放返回对话（第二次及以后进入，未答对情况下）
-        function playReturnDialogue() {
-            if (returnStep < returnScript.length) {
-                const line = returnScript[returnStep];
-                typeWriter(line.text, () => {
-                    log.push({ speaker: line.speaker, text: line.text });
-                    saveLog();
-                    updateHistory();
-                    returnStep++;
-                    if (returnStep >= returnScript.length) {
-                        canInput = true;
-                        inputBox.classList.add('show');
-                        inputField.placeholder = '输入...';
-                        inputField.focus();
-                    } else {
-                        // 继续播放下一句
-                        setTimeout(playReturnDialogue, 800);
-                    }
-                });
-            }
-        }
-
         // 页面加载时检查状态
         window.addEventListener('load', () => {
-            // 如果已知道名字，播放"你怎么又来我房间了"剧本
             if (knownName) {
                 speakerName.textContent = currentSpeaker;
-                huanxiangReturnStep = 0;
-                playHuanxiangReturnDialogue();
+                startScript('huanxiangReturn');
+            } else if (wrongCount > 0) {
+                startScript('return');
+            } else {
+                startScript('main');
             }
-            // 如果错误次数>0且不知道名字，自动播放"欢迎回来"剧本
-            else if (wrongCount > 0) {
-                returnStep = 0;
-                playReturnDialogue();
-            }
-
-            // 更新历史记录
             updateHistory();
         });
 
