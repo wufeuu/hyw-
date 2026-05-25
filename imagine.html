@@ -51,7 +51,7 @@
         /* 主对话框容器 */
         .main-box {
             position: absolute;
-            bottom: 150px;
+            bottom: 60px;
             left: 20px;
             right: 20px;
         }
@@ -371,7 +371,11 @@
                 case 'firstWrong':
                 case 'repeatWrong':
                 case 'stop':
-                    // 返回搜索页
+                    // 记录为已来过，返回后显示"欢迎回来"
+                    if (wrongCount < 1) {
+                        wrongCount = 1;
+                        localStorage.setItem('imagine_wrong_count', '1');
+                    }
                     window.location.href = 'index.html';
                     break;
                 case 'correct':
