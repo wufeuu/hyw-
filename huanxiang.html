@@ -152,7 +152,7 @@
             padding: 20px;
             min-height: 200px;
             margin-top: auto;
-            margin-bottom: 30px;
+            margin-bottom: 0;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -173,7 +173,6 @@
             line-height: 1.8;
             color: #333;
             flex: 1;
-            margin-bottom: 15px;
         }
 
         .skip-area {
@@ -195,8 +194,8 @@
             display: flex;
             justify-content: space-between;
             gap: 10px;
+            margin-top: auto;
             padding-top: 15px;
-            border-top: 1px solid #eee;
         }
 
         .dialogue-btn {
@@ -321,6 +320,86 @@
             border-top: 2px solid #333;
         }
 
+        /* 对话记录面板 */
+        .chat-log-panel {
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: #fff;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .chat-log-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .chat-log-content {
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .chat-log-group {
+            margin-bottom: 12px;
+        }
+
+        .chat-log-speaker {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .chat-log-text {
+            padding-left: 10px;
+            border-left: 2px solid #ddd;
+            color: #333;
+        }
+
+        .chat-log-text div {
+            margin-bottom: 6px;
+        }
+
+        /* 问题选项面板 */
+        .question-panel {
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: #fff;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .question-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .question-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .question-option {
+            padding: 10px 12px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .question-option:hover {
+            background: #f5f5f5;
+        }
+
         .inject-label {
             font-size: 12px;
             margin-bottom: 8px;
@@ -346,154 +425,6 @@
 
         .back-link:hover {
             text-decoration: underline;
-        }
-
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .main-wrapper {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .sidebar {
-                width: 100%;
-                flex-direction: row;
-                gap: 8px;
-            }
-
-            .intro-section {
-                flex: 1;
-                min-height: auto;
-                padding: 12px;
-            }
-
-            .nav-section {
-                flex: 1;
-                padding: 10px;
-                gap: 6px;
-            }
-
-            .nav-btn {
-                padding: 8px;
-                font-size: 13px;
-            }
-
-            .inject-box {
-                margin-top: 6px;
-                padding-top: 6px;
-            }
-
-            .inject-input {
-                font-size: 12px;
-            }
-
-            .content-area {
-                padding: 12px;
-                min-height: 70vh;
-            }
-
-            .title-box {
-                padding: 15px;
-                margin-bottom: 12px;
-            }
-
-            .title-text {
-                font-size: 32px;
-                padding: 8px 20px;
-            }
-
-            .main-content {
-                padding: 20px;
-                min-height: calc(70vh - 140px);
-            }
-
-            .dialogue-area {
-                padding: 15px;
-                min-height: 160px;
-            }
-
-            .dialogue-text {
-                font-size: 14px;
-            }
-
-            .dialogue-btn {
-                font-size: 12px;
-                padding: 8px 10px;
-            }
-
-            .skip-area {
-                font-size: 22px;
-                padding: 8px 12px;
-                bottom: 8px;
-                right: 10px;
-            }
-
-            .content-item {
-                padding: 15px;
-                min-height: auto;
-            }
-
-            .album-section {
-                padding: 12px;
-            }
-
-            .album-row {
-                gap: 8px;
-            }
-
-            .album-item-small {
-                padding: 10px;
-                min-height: 60px;
-            }
-
-            .album-item-large {
-                padding: 10px;
-                min-height: 80px;
-            }
-
-            .section-label {
-                font-size: 12px;
-                top: 6px;
-                left: 10px;
-            }
-
-            .album-placeholder {
-                font-size: 12px;
-                min-height: 40px;
-            }
-
-            .content-list {
-                min-height: calc(70vh - 140px);
-                padding: 12px;
-            }
-
-            #albumPage.content-page {
-                min-height: calc(70vh - 140px);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .sidebar {
-                flex-direction: column;
-            }
-
-            .title-text {
-                font-size: 24px;
-                padding: 6px 14px;
-            }
-
-            .album-row {
-                flex-wrap: wrap;
-            }
-
-            .album-item-small {
-                min-width: calc(50% - 8px);
-                flex: none;
-            }
         }
     </style>
 </head>
@@ -524,6 +455,20 @@
                 <div class="inject-box" id="injectBox">
                     <span class="inject-label">输入密码：</span>
                     <input type="text" class="inject-input" id="injectInput" placeholder="..." autocomplete="off">
+                </div>
+            </div>
+
+            <!-- 对话记录面板（位于左侧边框外） -->
+            <div class="chat-log-panel" id="chatLogPanel" style="display: none;">
+                <div class="chat-log-title">对话记录</div>
+                <div class="chat-log-content" id="chatLogContent"></div>
+            </div>
+
+            <!-- 问题选项面板 -->
+            <div class="question-panel" id="questionPanel" style="display: none;">
+                <div class="question-title">选择操作</div>
+                <div class="question-options">
+                    <button class="question-option" onclick="createNewArticle()">创建新的博客文章</button>
                 </div>
             </div>
         </div>
@@ -566,7 +511,7 @@
                             <span class="character-name">幻想停</span>
                         </div>
                         <div class="dialogue-text" id="dialogueText"></div>
-                        <!-- 三角形按钮（对话期间显示在右下角） -->
+                        <!-- 三角形按钮（对话期间显示） -->
                         <div class="skip-area" id="skipArea" style="display: none;" onclick="skipDialogue()">▶</div>
                         <div class="dialogue-buttons" id="dialogueButtons" style="display: none;">
                             <button class="dialogue-btn" onclick="showChatLog()">记录</button>
@@ -587,15 +532,15 @@
             <div class="content-page" id="blogPage">
                 <div class="content-list">
                     <div class="content-item">
-                        <div class="item-title">博客文章 1</div>
+                        <div class="item-title">博客文章</div>
                         <div class="item-desc">点击查看更多...</div>
                     </div>
                     <div class="content-item">
-                        <div class="item-title">博客文章 2</div>
+                        <div class="item-title">博客文章</div>
                         <div class="item-desc">点击查看更多...</div>
                     </div>
                     <div class="content-item">
-                        <div class="item-title">博客文章 3</div>
+                        <div class="item-title">博客文章</div>
                         <div class="item-desc">点击查看更多...</div>
                     </div>
                 </div>
@@ -669,17 +614,26 @@
         const albumBtn = document.getElementById('albumBtn');
         const dialogueButtons = document.getElementById('dialogueButtons');
         const skipArea = document.getElementById('skipArea');
+        const chatLogPanel = document.getElementById('chatLogPanel');
+        const chatLogContent = document.getElementById('chatLogContent');
+        const questionPanel = document.getElementById('questionPanel');
 
         let characterInjected = false;
+        let isChatLogVisible = false;
+        let isQuestionPanelVisible = false;
         let currentPage = 'main';
         let injectStep = 0;
         let injectTyping = false;
         let injectFinished = false;
         let hasSpoken = false;
-        let chatLog = [];
+        // 从 localStorage 恢复对话记录
+        let chatLog = JSON.parse(localStorage.getItem('huanxiang_chatLog') || '[]');
 
-        // 注入后的对话剧本
-        const injectScript = [
+        // 检查是否访问过imagine页面
+        let hasVisitedImagine = localStorage.getItem('imagine_known_name') !== null || localStorage.getItem('imagine_wrong_count') !== null;
+
+        // 注入后的对话剧本（正常流程）
+        const injectScriptNormal = [
             'ww我怀念这边 好久没来了',
             '.....',
             '我知道你为什么会来找我了',
@@ -691,6 +645,19 @@
             '我在这里设计了一个聊天输入窗口',
             '你告诉我关键词我帮你检查解开隐藏'
         ];
+
+        // 注入后的对话剧本（未访问imagine直接注入）
+        const injectScriptDirect = [
+            '...?',
+            '看上去你应该"知道"点什么，伙计',
+            '或着是你狗屎突然尝试什么的',
+            '当然我觉得前者应该更符合一点',
+            '那么这下我想直接跳过前面的流程吧。跳剧人'
+        ];
+
+        // 根据是否访问过imagine选择剧本
+        let injectScript = hasVisitedImagine ? injectScriptNormal : injectScriptDirect;
+        let currentSpeakerName = hasVisitedImagine ? '幻想停' : '???';
 
         // 注入密码
         injectInput.addEventListener('keydown', (e) => {
@@ -742,8 +709,14 @@
             if (injectStep < injectScript.length) {
                 const text = injectScript[injectStep];
                 typeWriter(text, () => {
-                    chatLog.push(text);
+                    chatLog.push({ speaker: currentSpeakerName, text: text });
+                    localStorage.setItem('huanxiang_chatLog', JSON.stringify(chatLog));
                     injectStep++;
+                    // 未访问imagine直接注入时，第5段对话后名字从???改为幻想停
+                    if (!hasVisitedImagine && injectStep === 5) {
+                        currentSpeakerName = '幻想停';
+                        document.querySelector('.character-name').textContent = '幻想停';
+                    }
                     if (injectStep >= injectScript.length) {
                         injectFinished = true;
                         // 对话完成后启用文章和相册按钮
@@ -803,6 +776,11 @@
                 injectBtn.onclick = () => showPage('main');
                 // 移动角色到介绍框
                 moveCharacterToIntro();
+                // 检查是否需要创建新文章
+                if (localStorage.getItem('huanxiang_create_article') === 'true') {
+                    localStorage.removeItem('huanxiang_create_article');
+                    createNewBlogItem();
+                }
             } else if (page === 'album') {
                 document.getElementById('albumPage').classList.add('active');
                 document.getElementById('albumBtn').classList.add('active');
@@ -836,15 +814,46 @@
 
         // 显示聊天记录
         function showChatLog() {
-            if (chatLog.length === 0) {
-                dialogueText.textContent = '暂无对话记录';
+            isChatLogVisible = !isChatLogVisible;
+
+            if (!isChatLogVisible) {
+                chatLogPanel.style.display = 'none';
                 return;
             }
-            let logText = '【对话记录】\n\n';
-            chatLog.forEach((text, index) => {
-                logText += (index + 1) + '. ' + text + '\n\n';
+
+            if (chatLog.length === 0) {
+                chatLogContent.innerHTML = '<div style="text-align: center; color: #999;">暂无对话记录</div>';
+                chatLogPanel.style.display = 'block';
+                return;
+            }
+
+            // 按说话人分组
+            let groupedLog = [];
+            let currentGroup = null;
+
+            chatLog.forEach(item => {
+                if (!currentGroup || currentGroup.speaker !== item.speaker) {
+                    currentGroup = { speaker: item.speaker, texts: [item.text] };
+                    groupedLog.push(currentGroup);
+                } else {
+                    currentGroup.texts.push(item.text);
+                }
             });
-            dialogueText.textContent = logText;
+
+            // 生成HTML
+            let html = '';
+            groupedLog.forEach(group => {
+                html += '<div class="chat-log-group">';
+                html += '<div class="chat-log-speaker">' + group.speaker + '</div>';
+                html += '<div class="chat-log-text">';
+                group.texts.forEach(text => {
+                    html += '<div>' + text + '</div>';
+                });
+                html += '</div></div>';
+            });
+
+            chatLogContent.innerHTML = html;
+            chatLogPanel.style.display = 'block';
         }
 
         // 开始闲聊
@@ -853,8 +862,51 @@
         }
 
         // 提问
+        // 提问功能 - 切换选项面板显示/隐藏
         function askQuestion() {
-            alert('提问功能');
+            isQuestionPanelVisible = !isQuestionPanelVisible;
+
+            if (!isQuestionPanelVisible) {
+                questionPanel.style.display = 'none';
+                return;
+            }
+
+            // 隐藏其他面板
+            chatLogPanel.style.display = 'none';
+            isChatLogVisible = false;
+            // 显示问题选项面板
+            questionPanel.style.display = 'block';
+        }
+
+        // 创建新的博客文章
+        function createNewArticle() {
+            // 隐藏问题面板
+            questionPanel.style.display = 'none';
+            // 在聊天框显示"可以"
+            dialogueText.textContent = '可以';
+            // 添加到对话记录
+            chatLog.push({ speaker: '幻想停', text: '可以' });
+            localStorage.setItem('huanxiang_chatLog', JSON.stringify(chatLog));
+            // 标记需要创建新文章
+            localStorage.setItem('huanxiang_create_article', 'true');
+            // 延迟后跳转到文章页面
+            setTimeout(() => {
+                showPage('blog');
+            }, 800);
+        }
+
+        // 在文章页面创建新的博客文章项
+        function createNewBlogItem() {
+            const blogList = document.querySelector('#blogPage .content-list');
+            if (blogList) {
+                const newItem = document.createElement('div');
+                newItem.className = 'content-item';
+                newItem.innerHTML = `
+                    <div class="item-title">博客文章</div>
+                    <div class="item-desc">点击编辑内容...</div>
+                `;
+                blogList.appendChild(newItem);
+            }
         }
 
         // 三角形按钮：点击进入下一文本
